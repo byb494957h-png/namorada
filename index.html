@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cura</title>
+
+<!-- =================================================================== -->
+<!--  PERSONALIZE (mexa só no bloco CONFIG, lá no <script> embaixo):      -->
+<!--   • photos  -> links das SUAS fotos (capa passa elas)                -->
+<!--   • lines   -> seu textinho (vira a "Letra" e a linha que acende)    -->
+<!--  O resto já está montado idêntico ao Spotify da música "Cura".       -->
+<!-- =================================================================== -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --green:#1ed760;
+    --white:#ffffff;
+    --dim:rgba(255,255,255,.62);
+    --dim2:rgba(255,255,255,.38);
+    --card:rgba(255,255,255,.07);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:'Figtree',sans-serif;
+    color:var(--white);
+    background:#160a08;
+    -webkit-tap-highlight-color:transparent;
+    display:flex;justify-content:center;
+  }
+  .app{
+    width:100%;max-width:460px;min-height:100dvh;
+    background:linear-gradient(180deg,#7a2f25 0%, #582019 30%, #2e120e 60%, #160a08 100%);
+    background-attachment:local;
+    padding:0 22px 60px;
+  }
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 0 18px;position:sticky;top:0;z-index:5;
+  }
+  .topbar .ctx{font-size:15px;font-weight:700}
+  .icon-btn{background:none;border:none;color:var(--white);cursor:pointer;display:grid;place-items:center;padding:6px}
+  .icon-btn svg{width:22px;height:22px}
+
+  /* ---------- album art (fotos passando) ---------- */
+  .art{
+    position:relative;width:100%;aspect-ratio:1/1;border-radius:8px;overflow:hidden;
+    box-shadow:0 24px 50px -16px rgba(0,0,0,.65);
+  }
+  .art img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+    opacity:0;transition:opacity .8s ease;transform:scale(1.05);
+    animation:kb 10s ease-in-out infinite alternate;
+  }
+  .art img.show{opacity:1}
+  @keyframes kb{from{transform:scale(1.0)}to{transform:scale(1.08)}}
+  .explicit{
+    position:absolute;right:10px;bottom:10px;
+    font-size:8px;font-weight:800;letter-spacing:.04em;line-height:1.15;
+    background:rgba(0,0,0,.55);color:#cfcfcf;border:1px solid rgba(255,255,255,.25);
+    padding:3px 5px;border-radius:2px;text-align:center;
+  }
+
+  /* ---------- linha que "acende" ---------- */
+  .nowline{
+    margin:26px 2px 0;font-size:23px;font-weight:800;line-height:1.18;letter-spacing:-.01em;
+    min-height:30px;transition:opacity .5s ease;
+  }
+
+  /* ---------- título + artistas + add ---------- */
+  .trackrow{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-top:34px}
+  .track-title{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1}
+  .track-artists{display:flex;align-items:center;gap:7px;color:var(--dim);font-size:15px;margin-top:9px;font-weight:500}
+  .ebadge{font-size:10px;font-weight:700;background:rgba(255,255,255,.45);color:#2e120e;border-radius:3px;padding:1px 4px;line-height:1}
+  .add{flex:none;width:32px;height:32px;border:1.6px solid rgba(255,255,255,.55);border-radius:50%;background:none;color:var(--white);display:grid;place-items:center;cursor:pointer}
+  .add svg{width:17px;height:17px}
+
+  /* ---------- progresso ---------- */
+  .progress{margin-top:18px}
+  .bar{position:relative;height:16px;display:flex;align-items:center;cursor:pointer;touch-action:none}
+  .bar::before{content:"";position:absolute;left:0;right:0;height:4px;border-radius:4px;background:rgba(255,255,255,.28)}
+  .bar-fill{position:absolute;left:0;height:4px;border-radius:4px;background:var(--white);width:3%}
+  .knob{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--white);left:3%;transform:translateX(-50%);box-shadow:0 1px 4px rgba(0,0,0,.5)}
+  .times{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums}
+
+  /* ---------- controles ---------- */
+  .controls{display:flex;align-items:center;justify-content:space-between;margin-top:22px}
+  .controls button{background:none;border:none;color:var(--white);cursor:pointer;display:grid;place-items:center;transition:transform .12s ease}
+  .controls button:active{transform:scale(.86)}
+  .controls .side{width:26px;height:26px}
+  .controls .mid{width:34px;height:34px}
+  .controls .play{width:62px;height:62px;border-radius:50%;background:#ffffff !important;display:grid;place-items:center}
+  .controls .play svg{width:27px;height:27px;color:#0d0d0d;transform:translateX(2px)}
+  .controls .play.playing svg{transform:none}
+
+  /* ---------- barra inferior do player ---------- */
+  .pbar{display:flex;align-items:center;justify-content:space-between;margin-top:24px;color:var(--dim)}
+  .pbar .right{display:flex;gap:22px}
+  .pbar svg{width:20px;height:20px}
+  .pbar button{background:none;border:none;color:inherit;cursor:pointer;padding:0}
+
+  /* ---------- card LETRA (seu textinho) ---------- */
+  .lyrics{
+    margin-top:34px;background:#d9472a;border-radius:14px;padding:22px 22px 28px;color:#3a0f06;
+  }
+  .lyrics .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .lyrics .head b{font-size:15px;font-weight:800;color:#fff}
+  .lyrics .head .acts{display:flex;gap:10px}
+  .lyrics .head .acts span{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.18);display:grid;place-items:center}
+  .lyrics .head .acts svg{width:16px;height:16px;color:#fff}
+  .lyrics p{font-size:25px;font-weight:800;line-height:1.25;margin-bottom:18px;letter-spacing:-.01em;color:rgba(58,15,6,.55)}
+  .lyrics p.lit{color:#fff}
+  .lyrics p:last-child{margin-bottom:0}
+  .lyrics p.quote{font-style:italic;color:#fff;border-left:3px solid rgba(255,255,255,.8);padding-left:15px;font-size:23px}
+  .lyrics p.quote .src{display:block;font-style:normal;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(58,15,6,.65);margin-top:10px}
+
+  /* ---------- créditos ---------- */
+  .credits{margin-top:30px;background:var(--card);border-radius:14px;padding:22px}
+  .credits .ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .credits .ch b{font-size:18px;font-weight:800}
+  .credits .ch a{color:var(--green);font-size:14px;font-weight:700;text-decoration:none}
+  .crow{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .crow:last-child{margin-bottom:0}
+  .crow .nm{font-size:18px;font-weight:600}
+  .crow .rl{font-size:13px;color:var(--dim);margin-top:2px}
+  .follow{border:1px solid rgba(255,255,255,.5);background:none;color:#fff;font-size:13px;font-weight:700;padding:8px 18px;border-radius:999px;cursor:pointer}
+
+  /* ---------- sobre o artista ---------- */
+  .about{margin-top:34px}
+  .about h2{font-size:22px;font-weight:800;margin-bottom:14px}
+  .about .ph{width:100%;aspect-ratio:4/5;border-radius:10px 10px 0 0;overflow:hidden}
+  .about .ph img{width:100%;height:100%;object-fit:cover;object-position:center 26%}
+  .about .info{background:var(--card);border-radius:0 0 10px 10px;padding:20px}
+  .about .top2{display:flex;align-items:center;justify-content:space-between}
+  .about .nm{display:flex;align-items:center;gap:7px;font-size:24px;font-weight:800}
+  .about .nm .verif{width:18px;height:18px;color:var(--green)}
+  .about .listeners{color:var(--dim);font-size:14px;margin-top:4px;font-weight:500}
+  .about .bio{color:rgba(255,255,255,.78);font-size:15px;line-height:1.55;margin-top:16px}
+  .about .bio b{color:#fff;font-weight:700}
+
+  @media (prefers-reduced-motion: reduce){.art img{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <button class="icon-btn" aria-label="Voltar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></button>
+    <span class="ctx">"cura" na Busca</span>
+    <button class="icon-btn" aria-label="Mais"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+  </header>
+
+  <div class="art" id="art">
+    <img id="imgA" alt=""><img id="imgB" alt="">
+    <div class="explicit">PARENTAL<br>ADVISORY<br>EXPLICIT CONTENT</div>
+  </div>
+
+  <div class="nowline" id="nowline"></div>
+
+  <div class="trackrow">
+    <div>
+      <div class="track-title">Cura</div>
+      <div class="track-artists"><span class="ebadge">E</span> Sotam, Yngrid, Rob, JOK3R</div>
+    </div>
+    <button class="add" aria-label="Salvar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+  </div>
+
+  <div class="progress">
+    <div class="bar" id="bar"><div class="bar-fill" id="fill"></div><div class="knob" id="knob"></div></div>
+    <div class="times"><span id="cur">0:00</span><span id="rem">-2:41</span></div>
+  </div>
+
+  <div class="controls">
+    <button class="shuffle" aria-label="Aleatório"><svg class="side" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
+    <button id="prev" aria-label="Anterior"><svg class="mid" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14l-11-7z"/></svg></button>
+    <button class="play" id="play" aria-label="Tocar"><svg id="pIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+    <button id="next" aria-label="Próxima"><svg class="mid" viewBox="0 0 24 24" fill="currentColor"><path d="M18 5h-2v14h2zM4 5v14l11-7z"/></svg></button>
+    <button class="repeat" aria-label="Repetir"><svg class="side" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg></button>
+  </div>
+
+  <div class="pbar">
+    <button aria-label="Dispositivos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="13" y="4" width="8" height="13" rx="1.5"/><path d="M3 9a9 9 0 0 1 7 7M3 13a5 5 0 0 1 3.5 3.5M3.5 17.5h.01"/></svg></button>
+    <div class="right">
+      <button aria-label="Compartilhar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M8 7l4-4 4 4M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg></button>
+      <button aria-label="Fila"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h12M4 12h12M4 17h8M19 8v9M19 17a2 2 0 1 0 0-.01"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ====== LETRA (seu textinho) ====== -->
+  <section class="lyrics">
+    <div class="head">
+      <b>Letra</b>
+      <div class="acts">
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M8 7l4-4 4 4M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg></span>
+        <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>
+      </div>
+    </div>
+    <div id="lyricLines"></div>
+  </section>
+
+  <!-- ====== CRÉDITOS ====== -->
+  <section class="credits">
+    <div class="ch"><b>Créditos</b><a href="#">Mostrar tudo</a></div>
+    <div class="crow"><div><div class="nm">Sotam</div><div class="rl">Artista principal • Produção do estúdi...</div></div><button class="follow">Seguindo</button></div>
+    <div class="crow"><div><div class="nm">Yngrid</div><div class="rl">Artista principal</div></div><button class="follow">Seguir</button></div>
+    <div class="crow"><div><div class="nm">Rob</div><div class="rl">Artista principal • Produção do estúdi...</div></div><button class="follow">Seguindo</button></div>
+  </section>
+
+  <!-- ====== SOBRE O ARTISTA ====== -->
+  <section class="about">
+    <h2>Sobre o artista</h2>
+    <div class="ph"><img src="fotos/jessica.jpg" alt="Jessica"></div>
+    <div class="info">
+      <div class="top2">
+        <div>
+          <div class="nm">Jessica Adrieli Lopes <svg class="verif" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 1.8 3 .2.9 2.9 2.4 1.8-.9 2.9.9 2.9-2.4 1.8-.9 2.9-3 .2L12 22l-2.4-1.8-3-.2-.9-2.9L3.3 15l.9-2.9L3.3 9.2l2.4-1.8.9-2.9 3-.2z"/><path d="M9.5 12.5l1.8 1.8 3.5-3.8" fill="none" stroke="#160a08" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="listeners">1 ouvinte fixo • pra sempre</div>
+        </div>
+        <button class="follow">Seguindo</button>
+      </div>
+      <p class="bio">Desde a primeira vez que te vi, desejei e quis que fosse minha. Como diz o Sotam: “a lua encontra o mar e eu te encontrei”. Depois de tanta persistência, idas e vindas, finalmente a lua encontrou o mar. E eu te amo muito, e quero que dure pra sempre.</p>
+    </div>
+  </section>
+
+</div>
+
+<audio id="audio" preload="auto"></audio>
+
+<script>
+/* =================== CONFIG — MEXA AQUI =================== */
+const CONFIG = {
+  // Fotos de vocês (a capa passa elas, 3s cada).
+  photos: ["fotos/foto-1.jpg","fotos/foto-2.jpg","fotos/foto-3.jpg","fotos/foto-4.jpg"],
+
+  // Seu texto (vira a "Letra" e acende lá em cima). quoteIndex = a linha do Sotam.
+  lines: [
+    "Desde a primeira vez que te vi,",
+    "desejei e quis que fosse minha.",
+    "Como diz o Sotam:",
+    "a lua encontra o mar e eu te encontrei",
+    "Depois de tanta persistência, idas e vindas,",
+    "finalmente a lua encontrou o mar.",
+    "E eu te amo muito, e quero que dure pra sempre."
+  ],
+  quoteIndex: 3
+};
+/* ========================================================= */
+
+const $ = id => document.getElementById(id);
+const audio = $('audio');
+
+/* musica na pasta musica/ */
+audio.src = 'musica/cura.mp3';
+audio.load();
+
+/* ----- fotos passando na capa ----- */
+const imgA=$('imgA'), imgB=$('imgB');
+let pi=0, front=imgA;
+CONFIG.photos.forEach(s=>{const i=new Image();i.src=s;});
+function showPhoto(i){const back=front===imgA?imgB:imgA;back.src=CONFIG.photos[i];back.classList.add('show');front.classList.remove('show');front=back;}
+if(CONFIG.photos.length) showPhoto(0);
+setInterval(()=>{if(!CONFIG.photos.length)return;pi=(pi+1)%CONFIG.photos.length;showPhoto(pi);},3000);
+
+/* ----- letra (card) ----- */
+$('lyricLines').innerHTML = CONFIG.lines.map((l,i)=>{
+  if(i===CONFIG.quoteIndex) return `<p class="quote lit">“${l}”<span class="src">— Sotam, Cura</span></p>`;
+  return `<p${i<2?' class="lit"':''}>${l}</p>`;
+}).join('');
+
+/* ----- linha que acende em cima ----- */
+const nowline=$('nowline');let li=0;
+function setNow(i){nowline.style.opacity=0;setTimeout(()=>{nowline.textContent=CONFIG.lines[i];nowline.style.opacity=1;},250);}
+setNow(0);
+setInterval(()=>{li=(li+1)%CONFIG.lines.length;setNow(li);
+  const ps=$('lyricLines').querySelectorAll('p');ps.forEach((p,k)=>p.classList.toggle('lit',k===li||k===(li+1)%ps.length));
+},4500);
+
+/* ----- play / pause ----- */
+const play=$('play'), pIcon=$('pIcon');
+const PLAY='<path d="M8 5v14l11-7z"/>', PAUSE='<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>';
+play.addEventListener('click',()=>{
+  if(!audio.paused){ audio.pause(); return; }
+  const p = audio.play();
+  if(p&&p.catch) p.catch(err=>console.warn('toque o play de novo / abra no navegador', err));
+});
+audio.addEventListener('play',()=>{pIcon.innerHTML=PAUSE;play.classList.add('playing');});
+audio.addEventListener('pause',()=>{pIcon.innerHTML=PLAY;play.classList.remove('playing');});
+audio.addEventListener('ended',()=>{pIcon.innerHTML=PLAY;play.classList.remove('playing');});
+
+/* ----- prev / next (volta / avança 15s) ----- */
+$('prev').addEventListener('click',()=>{ if(!isFinite(audio.duration))return; audio.currentTime=audio.currentTime>15?audio.currentTime-15:0; });
+$('next').addEventListener('click',()=>{ if(!isFinite(audio.duration))return; audio.currentTime=Math.min(audio.duration,audio.currentTime+15); });
+
+/* ----- barra de progresso ----- */
+const bar=$('bar'),fill=$('fill'),knob=$('knob');
+const fmt=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+audio.addEventListener('loadedmetadata',()=>{$('rem').textContent='-'+fmt(audio.duration);});
+audio.addEventListener('timeupdate',()=>{if(seeking)return;const d=audio.duration||0;const p=d?audio.currentTime/d:0;fill.style.width=(p*100)+'%';knob.style.left=(p*100)+'%';$('cur').textContent=fmt(audio.currentTime);$('rem').textContent='-'+fmt(d-audio.currentTime);});
+let seeking=false;
+function seekAt(x){const r=bar.getBoundingClientRect();let p=Math.max(0,Math.min(1,(x-r.left)/r.width));fill.style.width=(p*100)+'%';knob.style.left=(p*100)+'%';const d=audio.duration||0;$('cur').textContent=fmt(p*d);$('rem').textContent='-'+fmt(d-p*d);return p;}
+function down(e){if(!audio.duration)return;seeking=true;seekAt((e.touches?e.touches[0]:e).clientX);}
+function move(e){if(seeking)seekAt((e.touches?e.touches[0]:e).clientX);}
+function up(e){if(!seeking)return;seeking=false;audio.currentTime=seekAt((e.changedTouches?e.changedTouches[0]:e).clientX)*audio.duration;}
+bar.addEventListener('mousedown',down);window.addEventListener('mousemove',move);window.addEventListener('mouseup',up);
+bar.addEventListener('touchstart',down,{passive:true});bar.addEventListener('touchmove',move,{passive:true});bar.addEventListener('touchend',up);
+</script>
+</body>
+</html>
